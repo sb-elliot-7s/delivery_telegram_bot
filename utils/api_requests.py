@@ -3,11 +3,11 @@ from enum import Enum
 
 
 class Method(Enum):
-    GET = 'get'
-    POST = 'post'
-    DELETE = 'delete'
-    PATCH = 'patch'
-    PUT = 'put'
+    GET = 'GET'
+    POST = 'POST'
+    DELETE = 'DELETE'
+    PATCH = 'PATCH'
+    PUT = 'PUT'
 
 
 class HTTPClient:
@@ -15,12 +15,14 @@ class HTTPClient:
         self._base_url = base_url
 
     async def api_request(
-            self, url: str, method: Method = Method.GET, data: dict | None = None,
+            self, url: str,
+            method: Method = Method.GET,
+            data: dict | None = None,
             params: dict | None = None,
             headers: dict | None = None,
             ok_status_code: int = 200
     ):
-        async with aiohttp.ClientSession(base_url=self._base_url if self._base_url else None) as session:
+        async with aiohttp.ClientSession(base_url=self._base_url) as session:
             async with session.request(
                     method=method.value,
                     url=url,
