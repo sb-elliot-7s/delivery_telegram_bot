@@ -1,5 +1,6 @@
 from aiogram import Router, types, F
 from aiogram.filters import CommandStart, Command
+from aiogram.utils.markdown import text, markdown_decoration
 
 from keyboards.start_keyboards import start_keyboard
 from db.user import UserDB
@@ -26,4 +27,5 @@ async def help_handler(message: types.Message):
 
 @common_router.message(F.text == 'Показать контакты')
 async def contacts_handler(message: types.Message):
-    await message.reply(text='Телефон: +89007773355\n\nEmail: sobaka@gmail.com\n\nhttps://delivery-food.com')
+    await message.reply(text=text(
+        markdown_decoration.quote('Телефон: +89007773355\n\nEmail: sobaka@gmail.com\n\nhttps://delivery-food.com')))
