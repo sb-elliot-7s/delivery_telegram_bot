@@ -2,6 +2,8 @@ from aiogram import Router, types, F
 from aiogram.filters import CommandStart, Command
 
 from keyboards.start_keyboards import start_keyboard
+from db.user import UserDB
+from db.base import user_collection
 
 common_router = Router(name='common_router')
 
@@ -9,9 +11,7 @@ common_router = Router(name='common_router')
 @common_router.message(CommandStart())
 async def start_handler(message: types.Message):
     user = message.from_user
-    """
-    save user in db
-    """
+    await UserDB(user_collection).save_user(user_document={'_id': user.id, **user.model_dump(exclude={'id'})})
     await message.answer_photo(
         photo='https://etimg.etb2bimg.com/photo/84847436.cms',
         caption=f' Данный бот поможет вам быстро выбрать блюдо, оплатить и получить ваш заказ',
