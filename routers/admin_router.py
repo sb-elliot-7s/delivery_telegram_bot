@@ -1,13 +1,15 @@
 from aiogram import Router, types, F
-from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.utils.markdown import bold, text, markdown_decoration
 
+from db.dish import Dish
 from filters.is_admin import IsAdmin
 from keyboards.admin_keyboards import admin_keyboard, DishCallbackData
+from schemas.dish import DishSchema
 from states.admin import AddDishState, DeleteDishState, set_first_state, update_state
+from db.base import dish_collection
 
 admin_router = Router(name='admin_router')
 
@@ -59,10 +61,10 @@ async def set_price(message: types.Message, state: FSMContext):
         return await message.answer(text='Цена должна состоять из цифр и не может быть меньше 0.0. Напишите цену')
     await state.update_data(price=price)
     await message.answer(text='Блюдо успешно добавлено ✅')
-    data = await state.get_data()
-    photo = data.pop('photo')
-    await message.answer_photo(photo=photo, caption=get_caption_dish(**data), parse_mode=ParseMode.MARKDOWN_V2)
-    """save dish in db"""
+    dish_data = DishSchema(**await state.get_data())
+    await Dish(collection=dish_collection).save_dish(dish_document=dish_data.model_dump())
+    caption = get_caption_dish(**dish_data.model_dump(exclude={'photo'}))
+    await message.answer_photo(photo=dish_data.photo, caption=caption)
     await state.clear()
 
 
@@ -70,16 +72,19 @@ async def set_price(message: types.Message, state: FSMContext):
 
 @admin_router.callback_query(DishCallbackData.filter(F.action == 'delete'), IsAdmin(), default_state)
 async def delete_good(callback: types.CallbackQuery, state: FSMContext):
-    await set_first_state(callback_message=callback, state=state, message_text='Введите id блюда',
-                          first_state=DeleteDishState.dish_id)
+    await set_first_state(
+        callback_message=callback, state=state, message_text='Введите id блюда', first_state=DeleteDishState.dish_id)
 
 
 @admin_router.message(IsAdmin(), DeleteDishState.dish_id, F.text)
 async def delete_dish(message: types.Message, state: FSMContext):
     # await state.update_data(dish_id=message.text)
-    """delete dish from db"""
-    await message.reply(text='Блюдо было удалено ❌')
-    await state.clear()
+    result = await Dish(collection=dish_collection).delete_dish(dish_id=message.text)
+    if result:
+        await message.reply(text='Блюдо было удалено ❌')
+        await state.clear()
+    else:
+        await message.reply(text='Блюдо не найдено, повторите пожалуйста')
 
 
 # ---- stats ----
