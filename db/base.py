@@ -7,3 +7,4 @@ db = client.delivery
 
 user_collection: AsyncIOMotorCollection = db.users
 dish_collection: AsyncIOMotorCollection = db.dishes
+payment_collection: AsyncIOMotorCollection = db.payments
