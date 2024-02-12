@@ -52,13 +52,15 @@ async def set_description(message: types.Message, state: FSMContext):
 @admin_router.message(F.photo, AddDishState.photo, IsAdmin())
 async def set_photo(message: types.Message, state: FSMContext):
     await update_state(state=state, message=message, message_state_data=message.photo[-1].file_id, key='photo',
-                       msg='Фото добавлено, последний шаг - установите цену', next_state=AddDishState.price)
+                       msg=text(markdown_decoration.quote('Фото добавлено, последний шаг - установите цену')),
+                       next_state=AddDishState.price)
 
 
 @admin_router.message(F.text, AddDishState.price, IsAdmin())
 async def set_price(message: types.Message, state: FSMContext):
     if (price := message.text) and not price.isdigit() or float(price) <= 0.0:
-        return await message.answer(text='Цена должна состоять из цифр и не может быть меньше 0.0. Напишите цену')
+        return await message.answer(text=text(markdown_decoration.quote(
+            'Цена должна состоять из цифр и не может быть меньше 0.0. Напишите цену')))
     await state.update_data(price=price)
     await message.answer(text='Блюдо успешно добавлено ✅')
     dish_data = DishSchema(**await state.get_data())
