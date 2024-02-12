@@ -2,14 +2,15 @@ from aiogram import Router, types, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
-from aiogram.utils.markdown import bold, text, markdown_decoration
+from aiogram.utils.markdown import text, markdown_decoration
 
 from db.dish import Dish
 from filters.is_admin import IsAdmin
-from keyboards.admin_keyboards import admin_keyboard, DishCallbackData
-from schemas.dish import DishSchema
+from keyboards.admin_keyboards import admin_keyboard, AdminDishCallbackData
+from schemas.dish import CreateDishSchema
 from states.admin import AddDishState, DeleteDishState, set_first_state, update_state
 from db.base import dish_collection
+from utils.text_utils import get_caption_dish
 
 admin_router = Router(name='admin_router')
 
@@ -22,16 +23,7 @@ async def admin_routers(message: types.Message):
 # ---- add dish -----
 
 
-def get_caption_dish(name: str, description: str, price: str):
-    return text(
-        bold(name),
-        text(markdown_decoration.quote(description),
-             markdown_decoration.quote(f'{price} руб.'), sep='\n'),
-        sep='\n\n'
-    )
-
-
-@admin_router.callback_query(DishCallbackData.filter(F.action == 'add'), IsAdmin(), default_state)
+@admin_router.callback_query(AdminDishCallbackData.filter(F.action == 'add'), IsAdmin(), default_state)
 async def add_dish(callback: types.CallbackQuery, state: FSMContext):
     await set_first_state(callback_message=callback, state=state, message_text='Введите название блюда',
                           first_state=AddDishState.name)
@@ -63,7 +55,7 @@ async def set_price(message: types.Message, state: FSMContext):
             'Цена должна состоять из цифр и не может быть меньше 0.0. Напишите цену')))
     await state.update_data(price=price)
     await message.answer(text='Блюдо успешно добавлено ✅')
-    dish_data = DishSchema(**await state.get_data())
+    dish_data = CreateDishSchema(**await state.get_data())
     await Dish(collection=dish_collection).save_dish(dish_document=dish_data.model_dump())
     caption = get_caption_dish(**dish_data.model_dump(exclude={'photo'}))
     await message.answer_photo(photo=dish_data.photo, caption=caption)
@@ -72,7 +64,7 @@ async def set_price(message: types.Message, state: FSMContext):
 
 # ---- delete dish ----
 
-@admin_router.callback_query(DishCallbackData.filter(F.action == 'delete'), IsAdmin(), default_state)
+@admin_router.callback_query(AdminDishCallbackData.filter(F.action == 'delete'), IsAdmin(), default_state)
 async def delete_good(callback: types.CallbackQuery, state: FSMContext):
     await set_first_state(
         callback_message=callback, state=state, message_text='Введите id блюда', first_state=DeleteDishState.dish_id)
