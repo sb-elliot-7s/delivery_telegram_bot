@@ -14,15 +14,18 @@ class DeleteDishState(StatesGroup):
     dish_id = State()
 
 
+async def __common_set_state(message: types.Message, state: FSMContext, step: State, msg: str):
+    await message.answer(text=msg)
+    await state.set_state(step)
+
+
 async def update_state(state: FSMContext, message: types.Message, message_state_data: str, msg: str, next_state: State,
                        key):
     await state.update_data({key: message_state_data})
-    await message.answer(text=msg)
-    await state.set_state(next_state)
+    await __common_set_state(message=message, state=state, step=next_state, msg=msg)
 
 
 async def set_first_state(callback_message: types.CallbackQuery, state: FSMContext, first_state: State,
                           message_text: str):
     await callback_message.answer()
-    await callback_message.message.answer(text=message_text)
-    await state.set_state(first_state)
+    await __common_set_state(message=callback_message.message, state=state, step=first_state, msg=message_text)
