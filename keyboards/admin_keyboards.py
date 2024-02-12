@@ -1,18 +1,13 @@
-from aiogram.filters.callback_data import CallbackData
-
+from callback_datas.dish_callback_data import AdminDishCallbackData
 from .keyboard_builders import inline_keyboard_builder
-
-
-class DishCallbackData(CallbackData, prefix='dish'):
-    action: str
 
 
 def admin_keyboard():
     return inline_keyboard_builder(
         texts=['Добавить блюдо', 'Удалить блюдо', 'Статистика'],
         callback_datas=[
-            DishCallbackData(action='add').pack(),
-            DishCallbackData(action='delete').pack(),
+            AdminDishCallbackData(action='add').pack(),
+            AdminDishCallbackData(action='delete').pack(),
             'stats'
         ],
         sizes=[2, 1]
