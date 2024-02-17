@@ -21,13 +21,15 @@ async def pay(callback: types.CallbackQuery, bot: Bot, callback_data: DishCallba
     if dish_result.status_code == 404:
         return await callback.message.answer(text=dish_result.message)
     price = types.LabeledPrice(label=dish_result.dish.name, amount=int(dish_result.dish.price))
+    photo_url = ('https://images.unsplash.com/photo-1706685838669-69d5dcb5ecae?q=80&w=2069&auto=format&fit=crop'
+                 '&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')
     await bot.send_invoice(
         chat_id=callback.message.chat.id,
         title=dish_result.dish.name,
         description=dish_result.dish.description,
         payload=f'dish:{callback_data.id}',
         start_parameter=str(uuid.uuid4()),
-        photo_url='https://images.unsplash.com/photo-1706685838669-69d5dcb5ecae?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        photo_url=photo_url,
         photo_width=1000,
         photo_height=1000,
         provider_token=settings.provider_token,
