@@ -10,8 +10,7 @@ dish_router = Router(name='dish_router')
 
 @dish_router.message(F.text == 'Меню')
 async def show_dishes(message: types.Message):
-    dishes = await Dish(collection=dish_collection).get_dishes()
-    if not dishes:
+    if not (dishes := await Dish(collection=dish_collection).get_dishes()):
         return await message.answer(text='Список блюд пуст')
     for dish in dishes:
         caption: str = get_caption_dish(name=dish.name, description=dish.description, price=dish.price)

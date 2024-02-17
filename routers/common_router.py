@@ -15,7 +15,7 @@ async def start_handler(message: types.Message):
     await UserDB(user_collection).save_user(user_document={'_id': user.id, **user.model_dump(exclude={'id'})})
     await message.answer_photo(
         photo='https://etimg.etb2bimg.com/photo/84847436.cms',
-        caption=f' Данный бот поможет вам быстро выбрать блюдо, оплатить и получить ваш заказ',
+        caption=f'Данный бот поможет вам быстро выбрать блюдо, оплатить и получить ваш заказ',
         reply_markup=start_keyboard()
     )
 
