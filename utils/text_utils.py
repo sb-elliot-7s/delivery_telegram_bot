@@ -10,3 +10,25 @@ def get_caption_dish(name: str, description: str, price: str):
              markdown_decoration.quote(f'{price} руб.'), sep='\n'),
         sep='\n\n'
     )
+
+
+def telegram_text_format(text: str) -> str:
+    return text. \
+        replace('_', '\\_'). \
+        replace('*', '\\*'). \
+        replace('[', '\\['). \
+        replace(']', '\\]'). \
+        replace('(', '\\('). \
+        replace(')', '\\)'). \
+        replace('~', '\\~'). \
+        replace('`', '\\`'). \
+        replace('>', '\\>'). \
+        replace('#', '\\#'). \
+        replace('+', '\\+'). \
+        replace('-', '\\-'). \
+        replace('=', '\\='). \
+        replace('|', '\\|'). \
+        replace('{', '\\{'). \
+        replace('}', '\\}'). \
+        replace('.', '\\.'). \
+        replace('!', '\\!')
