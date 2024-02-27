@@ -8,5 +8,10 @@ class Settings(BaseSettings):
     admin_id: int
     provider_token: str
 
+    pinecone_api_key: str
+    pinecone_index_name: str
+
+    document_url: str
+
 
 settings = Settings()
