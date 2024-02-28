@@ -1,9 +1,12 @@
-from aiogram import Router
-from aiogram.types import InlineQuery, InlineQueryResultArticle, InputInvoiceMessageContent, LabeledPrice
-
+from aiogram import Router, F
+from aiogram.types import InlineQuery, InlineQueryResultArticle, InputInvoiceMessageContent, LabeledPrice, Message
+from langchain_community.llms.ollama import Ollama
+from langchain_core.vectorstores import VectorStoreRetriever
+from ai.rag import RAG
 from db.dish import Dish
 from db.base import dish_collection
 from configs import settings
+from utils.text_utils import telegram_text_format
 
 conversation_router = Router(name='converation_router')
 
@@ -40,3 +43,25 @@ async def dishes_inline(inline_query: InlineQuery):
         ) for dish in dishes
     ]
     await inline_query.answer(results=results, is_personal=True)
+
+
+TEMPLATE = """
+        Используй следующие фрагменты контекста, чтобы ответить на вопрос в конце.
+        Если ты не знаешь ответ, просто скажи, что не знаешь, не пытайся придумать ответ.
+        Используй максимум пять предложений и старайся отвечать максимально кратко.
+
+        {context}
+
+        Вопрос: {question}
+
+        Полезный ответ:
+    """
+
+LLM = Ollama(model='gemma:2b', temperature=0)
+
+
+@conversation_router.message(F.text)
+async def conversation_handler(message: Message, retriever: VectorStoreRetriever):
+    rag = RAG(llm_model=LLM, retriever=retriever, prompt_template=TEMPLATE)
+    response = await rag.answer(question=message.text)
+    await message.reply(text=telegram_text_format(response))
